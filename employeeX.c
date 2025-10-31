@@ -366,7 +366,7 @@ void EmployeeMenu_client(int sock_fd, struct User *curUserPtr){
             case 10 : {
                 int flag = 0;
                 char username[MAXSTR], firstName[MAXSTR], lastName[MAXSTR];
-                printf("Enter username for new customer : ");
+                printf("Enter username for the customer to edit : ");
                 scanf("%s", username);
                 send(sock_fd, username, sizeof(username), 0);
                 read(sock_fd, &flag, sizeof(flag));
