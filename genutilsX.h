@@ -26,9 +26,11 @@
 
 #define BACKLOG 5
 #define MAXSTR 50
+#define FEEDBACKLEN 2048
 
 #define USERDETAILSFILE "users.dat"
 #define TXNSFILE "txns.dat"
+#define FBFILE "feedbacks.dat"
 
 #define ACCOUNTDISABLEDMSG "Your account was disabled, please contact your bank manager!\n"
 
@@ -52,6 +54,11 @@ struct Txn {
     float amt;
     float senderBalAfterTxn;
     float receiverBalAfterTxn;
+};
+
+struct Fback {
+    char username[MAXSTR];
+    char feedback[FEEDBACKLEN];
 };
 
 
@@ -81,5 +88,7 @@ struct User makeTxn(struct User *curUserPtr, float amount, char rcvr[MAXSTR]);
 void getTxnDetails(int client_fd, struct User *curUserPtr);
 
 struct User changePassword_server(struct User *curUserPtr, char newPassword[1024]);
+
+void addFeedback(char username[MAXSTR], char feedback[FEEDBACKLEN]);
 
 #endif

@@ -370,3 +370,15 @@ struct User changePassword_server(struct User *curUserPtr, char newPassword[1024
     close(fd);
     return *curUserPtr;
 }
+
+void addFeedback(char username[MAXSTR], char feedback[FEEDBACKLEN]) {
+    struct Fback fb;
+    strcpy(fb.username, username);
+    strcpy(fb.feedback, feedback);
+
+    int fd = open(FBFILE, O_WRONLY | O_APPEND);
+    apply_lock(fd, F_WRLCK);
+    write(fd, &fb, sizeof(fb));
+    apply_lock(fd, F_UNLCK);
+    close(fd);
+}

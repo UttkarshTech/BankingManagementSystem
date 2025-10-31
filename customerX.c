@@ -65,6 +65,16 @@ void CustomerMenu_server(int client_fd, struct User *curUserPtr){
                 getTxnDetails(client_fd, curUserPtr);
             }
             break;
+            case 7 : {
+                read(client_fd, curUserPtr, sizeof(struct User));
+                char feedback[FEEDBACKLEN];
+                
+                read(client_fd, feedback, sizeof(feedback));
+                if (strlen(feedback) == 0)
+                    break;
+                addFeedback(curUserPtr->username, feedback);
+            } 
+            break;
             case 8 : {
                 read(client_fd, curUserPtr, sizeof(struct User));
                 int flag;
@@ -198,6 +208,15 @@ void CustomerMenu_client(int sock_fd, struct User *curUserPtr){
                     printf("%s\n", temp);
                     read(sock_fd, temp, sizeof(temp));
                 }
+            }
+            break;
+            case 7 : {
+                send(sock_fd, curUserPtr, sizeof(struct User), 0);
+                char feedback[FEEDBACKLEN];
+                printf("Please enter your feedback : ");
+                scanf(" %[^\n]", feedback);
+                send(sock_fd, feedback, sizeof(feedback), 0);
+                printf("Feedback added!\n");
             }
             break;
             case 8 : {
