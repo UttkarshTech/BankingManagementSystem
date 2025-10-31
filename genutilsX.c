@@ -41,12 +41,11 @@ struct User verifyLogin(int client_fd, struct User *curUserPtr) {
     ssize_t bytes_read;
 
     while ((bytes_read = read(fd, &record, sizeof(record))) > 0) {
-        // Check for a partial read, which might mean a corrupt file
         if (bytes_read != sizeof(record)) {
             safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
-            continue; // Skip this record
+            continue;
         }
-        // Compare the stored record with the user's input
+        
         if (strcmp(curUserPtr->username, record.username) == 0 &&
             strcmp(curUserPtr->password, record.password) == 0) {
             if (!record.isActive){
@@ -66,7 +65,7 @@ struct User verifyLogin(int client_fd, struct User *curUserPtr) {
             lseek(fd, -1*sizeof(record), SEEK_CUR);
             write(fd, &record, sizeof(record));
             *curUserPtr = record;
-            break; // Stop reading once the user is found
+            break; 
         }
     }
     apply_lock(fd, F_UNLCK);
@@ -86,7 +85,7 @@ struct User logout_server(int client_fd, struct User *curUserPtr){
     int found = 0;
 
     while ((bytes_read = read(fd, &record, sizeof(record))) > 0) {
-        // Check for a partial read, which might mean a corrupt file
+        
         if (bytes_read != sizeof(record)) {
             safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
             continue;
@@ -116,7 +115,7 @@ struct User getDetails_server(int client_fd, struct User *curUserPtr){
     ssize_t bytes_read;
 
     while ((bytes_read = read(fd, &record, sizeof(record))) > 0) {
-        // Check for a partial read, which might mean a corrupt file
+        
         if (bytes_read != sizeof(record)) {
             safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
             continue;
@@ -145,14 +144,14 @@ struct User deposit_server(int client_fd, struct User *curUserPtr, float amt){
     ssize_t bytes_read;
 
     while ((bytes_read = read(fd2, &record, sizeof(record))) > 0) {
-        // Check for a partial read, which might mean a corrupt file
+        
         if (bytes_read != sizeof(record)) {
             safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
             continue;
         }
         if (strcmp(curUserPtr->username, record.username) == 0) {
             if (record.isActive){
-                //log the deposit txn
+                
                 record.balance += amt;
                 apply_lock(fd1, F_WRLCK);
                 txnRecord.senderBalAfterTxn = record.balance;
@@ -187,14 +186,14 @@ struct User withdraw_server(int client_fd, struct User *curUserPtr, float amt){
     ssize_t bytes_read;
 
     while ((bytes_read = read(fd2, &record, sizeof(record))) > 0) {
-        // Check for a partial read, which might mean a corrupt file
+        
         if (bytes_read != sizeof(record)) {
             safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
             continue;
         }
         if (strcmp(curUserPtr->username, record.username) == 0) {
             if (record.isActive && record.balance >= amt){
-                //log the deposit txn
+                
                 record.balance -= amt;
                 apply_lock(fd1, F_WRLCK);
                 txnRecord.senderBalAfterTxn = record.balance;
@@ -222,7 +221,7 @@ int validateUsername(char *username){
     ssize_t bytes_read;
     int flag = 0;
     while ((bytes_read = read(fd, &record, sizeof(record))) > 0) {
-        // Check for a partial read, which might mean a corrupt file
+        
         if (bytes_read != sizeof(record)) {
             safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
             continue;
@@ -245,7 +244,7 @@ int validateUsernameAndRole(char *username, int role){
     ssize_t bytes_read;
     int flag = 0;
     while ((bytes_read = read(fd, &record, sizeof(record))) > 0) {
-        // Check for a partial read, which might mean a corrupt file
+        
         if (bytes_read != sizeof(record)) {
             safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
             continue;
@@ -268,7 +267,7 @@ int validateWithdrawal(char *username, float amount){
     ssize_t bytes_read;
     int flag = 0;
     while ((bytes_read = read(fd, &record, sizeof(record))) > 0) {
-        // Check for a partial read, which might mean a corrupt file
+        
         if (bytes_read != sizeof(record)) {
             safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
             continue;
@@ -299,7 +298,7 @@ struct User makeTxn(struct User *curUserPtr, float amount, char rcvr[MAXSTR]){
     apply_lock(fd2, F_WRLCK);
     
     while ((bytes_read = read(fd1, &sender, sizeof(sender))) > 0) {
-        // Check for a partial read, which might mean a corrupt file
+        
         if (bytes_read != sizeof(sender)) {
             safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
             continue;
@@ -343,7 +342,7 @@ void getTxnDetails(int client_fd, struct User *curUserPtr){
     int i = 0;
     apply_lock(fd, F_RDLCK);
     while ((bytes_read = read(fd, &txnRecord, sizeof(txnRecord))) > 0) {
-        // Check for a partial read, which might mean a corrupt file
+        
         if (bytes_read != sizeof(txnRecord)) {
             safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
             continue;
@@ -374,7 +373,7 @@ struct User changePassword_server(struct User *curUserPtr, char newPassword[1024
     ssize_t bytes_read;
 
     while ((bytes_read = read(fd, &record, sizeof(record))) > 0) {
-        // Check for a partial read, which might mean a corrupt file
+        
         if (bytes_read != sizeof(record)) {
             safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
             continue;
@@ -440,7 +439,7 @@ void changeCustomerStatus(char username[MAXSTR], int stat){
     struct User record;
     ssize_t bytes_read;
     while ((bytes_read = read(fd, &record, sizeof(record))) > 0) {
-        // Check for a partial read, which might mean a corrupt file
+        
         if (bytes_read != sizeof(record)) {
             safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
             continue;
@@ -462,7 +461,7 @@ void viewAllLoanApplications(int client_fd) {
     ssize_t bytes_read;
     apply_lock(fd, F_RDLCK);
     while ((bytes_read = read(fd, &loan, sizeof(loan))) > 0) {
-        // Check for a partial read, which might mean a corrupt file
+        
         if (bytes_read != sizeof(loan)) {
             safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
             continue;
@@ -485,7 +484,7 @@ void viewAllFeedbacks (int client_fd){
     ssize_t bytes_read;
     apply_lock(fd, F_RDLCK);
     while ((bytes_read = read(fd, &fb, sizeof(fb))) > 0) {
-        // Check for a partial read, which might mean a corrupt file
+        
         if (bytes_read != sizeof(fb)) {
             safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
             continue;
@@ -508,7 +507,7 @@ int validateLoanID(int loanID){
     int flag = 0;
     apply_lock(fd, F_RDLCK);
     while ((bytes_read = read(fd, &loan, sizeof(loan))) > 0) {
-        // Check for a partial read, which might mean a corrupt file
+        
         if (bytes_read != sizeof(loan)) {
             safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
             continue;
@@ -530,7 +529,7 @@ int assignLoan(int loanID, char employee[MAXSTR]){
     ssize_t bytes_read;
     apply_lock(fd, F_WRLCK);
     while ((bytes_read = read(fd, &loan, sizeof(loan))) > 0) {
-        // Check for a partial read, which might mean a corrupt file
+        
         if (bytes_read != sizeof(loan)) {
             safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
             continue;
@@ -556,7 +555,7 @@ int checkUniqueUsername(char username[MAXSTR]){
     struct User record;
     ssize_t bytes_read;
     while ((bytes_read = read(fd, &record, sizeof(record))) > 0) {
-        // Check for a partial read, which might mean a corrupt file
+        
         if (bytes_read != sizeof(record)) {
             safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
             continue;
@@ -589,7 +588,7 @@ int modifyCustomer(char username[MAXSTR], char firstName[MAXSTR], char lastName[
     struct User record;
     ssize_t bytes_read;
     while ((bytes_read = read(fd, &record, sizeof(record))) > 0) {
-        // Check for a partial read, which might mean a corrupt file
+        
         if (bytes_read != sizeof(record)) {
             safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
             continue;
@@ -614,7 +613,7 @@ void viewAllAssignedLoanApplications(char username[MAXSTR], int client_fd){
     ssize_t bytes_read;
     apply_lock(fd, F_RDLCK);
     while ((bytes_read = read(fd, &loan, sizeof(loan))) > 0) {
-        // Check for a partial read, which might mean a corrupt file
+        
         if (bytes_read != sizeof(loan)) {
             safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
             continue;
@@ -639,7 +638,7 @@ int loanEmployeeCheck(int loanID, char username[MAXSTR]){
     ssize_t bytes_read;
     apply_lock(fd, F_RDLCK);
     while ((bytes_read = read(fd, &loan, sizeof(loan))) > 0) {
-        // Check for a partial read, which might mean a corrupt file
+        
         if (bytes_read != sizeof(loan)) {
             safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
             continue;
@@ -662,16 +661,19 @@ int loanEmployeeCheck(int loanID, char username[MAXSTR]){
 int changeStatLoan(int loanID, int stat){
     int fd = open(LOANSFILE, O_RDWR);
     int fdi = open(USERDETAILSFILE, O_RDWR);
+    int fdj = open(TXNSFILE, O_RDWR);
     int flag = 0;
     char customer[MAXSTR];
     float amount;
     struct Loan loan;
     struct User record;
+    struct Txn txn;
     ssize_t bytes_read;
     apply_lock(fdi, F_WRLCK);
+    apply_lock(fdj, F_WRLCK);
     apply_lock(fd, F_WRLCK);
     while ((bytes_read = read(fd, &loan, sizeof(loan))) > 0) {
-        // Check for a partial read, which might mean a corrupt file
+        
         if (bytes_read != sizeof(loan)) {
             safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
             continue;
@@ -680,13 +682,17 @@ int changeStatLoan(int loanID, int stat){
             strcpy(customer, loan.username);
             amount = loan.loanAmount;
             loan.status = stat;
+            txn.amt = loan.loanAmount;
+            txn.senderBalAfterTxn = 0.0;
+            strcpy(txn.sender, "LOAN");
+            strcpy(txn.receiver, customer);
             lseek(fd, -1*sizeof(loan), SEEK_CUR);
             write(fd, &loan, sizeof(loan));
             printf("hit!\n");
             if (stat == LAPPROVED){
                 ssize_t bytes;
                 while ((bytes = read(fdi, &record, sizeof(record))) > 0) {
-                    // Check for a partial read, which might mean a corrupt file
+                    
                     if (bytes != sizeof(record)) {
                         safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
                         continue;
@@ -695,9 +701,9 @@ int changeStatLoan(int loanID, int stat){
                         record.balance += amount;
                         lseek(fdi, -1*sizeof(record), SEEK_CUR);
                         write(fdi, &record, sizeof(record));
+                        txn.receiverBalAfterTxn = record.balance;
+                        write(fdj, &txn, sizeof(txn));
                         flag = 1;
-                        printf("hit!\n");
-                        printf("%d\n", flag);
                         break;
                     }
                 }
@@ -709,9 +715,12 @@ int changeStatLoan(int loanID, int stat){
         }
     }
     apply_lock(fd, F_UNLCK);
+    apply_lock(fdj, F_UNLCK);
     apply_lock(fdi, F_UNLCK);
     printf("%d\n", flag);
     close(fd);
+    close(fdj);
+    close(fdi);
     return flag;
 }
 
@@ -723,7 +732,7 @@ int modifyRole(char username[MAXSTR], int role){
     struct User record;
     ssize_t bytes_read;
     while ((bytes_read = read(fd, &record, sizeof(record))) > 0) {
-        // Check for a partial read, which might mean a corrupt file
+        
         if (bytes_read != sizeof(record)) {
             safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
             continue;
@@ -740,4 +749,26 @@ int modifyRole(char username[MAXSTR], int role){
     close(fd);
     return flag;
 
+}
+
+void getAllTxnDetails(int client_fd){
+    int fd = open(TXNSFILE, O_RDONLY);
+    struct Txn txnRecord;
+    ssize_t bytes_read;
+    apply_lock(fd, F_RDLCK);
+    while ((bytes_read = read(fd, &txnRecord, sizeof(txnRecord))) > 0) {
+        
+        if (bytes_read != sizeof(txnRecord)) {
+            safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
+            continue;
+        }
+        char temp[1024];
+        snprintf(temp, sizeof(temp), "Sender: %s, Receiver: %s, Amount: %0.2f, Sender Balance After Txn: %0.2f, Receiver Balance After Txn: %0.2f", 
+        txnRecord.sender, txnRecord.receiver, txnRecord.amt, txnRecord.senderBalAfterTxn, txnRecord.receiverBalAfterTxn);
+        send(client_fd, temp, sizeof(temp), 0);
+    }
+    char temp[1024] = "END";
+    send(client_fd, temp, sizeof(temp), 0);
+    apply_lock(fd, F_UNLCK);
+    close(fd);
 }

@@ -53,7 +53,6 @@ void CustomerMenu_server(int client_fd, struct User *curUserPtr){
                     flag = validateUsername(rcvr);
                     send(client_fd, &flag, sizeof(flag), 0);
                     if (flag == 1){
-                        //make transaction
                         *curUserPtr = makeTxn(curUserPtr, amount, rcvr);
                         send(client_fd, curUserPtr, sizeof(struct User), 0);
                     } else printf("Txn cancelled.\n");
@@ -110,7 +109,7 @@ void CustomerMenu_client(int sock_fd, struct User *curUserPtr){
     int choice = 1;
     while (choice){
         if (curUserPtr->isActive){
-            printf("\n\n---CUSTOMER MENU---\n1. View Account Balance\n2. Deposit Money\n3. Withdraw Money\n4. Transfer Funds\n5. View All Transactions\n6. Apply for a Loan\n7. Leave a feedback\n8. Change Password\n0. Logout\n\n");
+            printf("\n\n---CUSTOMER MENU---\n1. View Account Balance\n2. Deposit Money\n3. Withdraw Money\n4. Transfer Funds\n5. View Your Transactions\n6. Apply for a Loan\n7. Leave a feedback\n8. Change Password\n0. Logout\n\n");
             printf("Your choice : ");
             scanf("%d", &choice);
         } else {
@@ -168,15 +167,12 @@ void CustomerMenu_client(int sock_fd, struct User *curUserPtr){
                 send(sock_fd, curUserPtr, sizeof(struct User), 0);
                 float amt, prevBal = curUserPtr->balance;
                 int flag;
-
-                //check if withdrawal of amount is possible
                 printf("Enter amount to transfer : ");
                 scanf("%f", &amt);
                 send(sock_fd, &amt, sizeof(amt), 0);
                 read(sock_fd, &flag, sizeof(flag));
 
                 if (flag == 1){
-                    //check is receiver is valid
                     char rcvr[MAXSTR];
                     printf("Enter the username of the receiver : ");
                     scanf("%s", rcvr);
@@ -223,6 +219,7 @@ void CustomerMenu_client(int sock_fd, struct User *curUserPtr){
                     read(sock_fd, temp, sizeof(temp));
                 }
             }
+            break;
             case 6 : {
                 send(sock_fd, curUserPtr, sizeof(struct User), 0);
                 float amount;

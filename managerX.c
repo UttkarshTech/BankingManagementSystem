@@ -52,8 +52,7 @@ void ManagerMenu_server(int client_fd, struct User *curUserPtr){
                     read(client_fd, rcvr, sizeof(rcvr));
                     flag = validateUsername(rcvr);
                     send(client_fd, &flag, sizeof(flag), 0);
-                    if (flag == 1){
-                        //make transaction
+                    if (flag == 1){                        
                         *curUserPtr = makeTxn(curUserPtr, amount, rcvr);
                         send(client_fd, curUserPtr, sizeof(struct User), 0);
                     } else printf("Txn cancelled.\n");
@@ -149,7 +148,7 @@ void ManagerMenu_client(int sock_fd, struct User *curUserPtr){
     int choice = 1;
     while (choice){
         if (curUserPtr->isActive){
-            printf("\n\n---MANAGER MENU---\n1. View Account Balance\n2. Deposit Money\n3. Withdraw Money\n4. Transfer Funds\n5. View All Transactions\n6. Apply for a Loan\n7. Leave a feedback\n8. Change Password\n9. Activate/Deactivate Customer Account\n10. View loan applications\n11. Assign loan to employee\n12. View customer feedbacks\n0. Logout\n\n");
+            printf("\n\n---MANAGER MENU---\n1. View Account Balance\n2. Deposit Money\n3. Withdraw Money\n4. Transfer Funds\n5. View Your Transactions\n6. Apply for a Loan\n7. Leave a feedback\n8. Change Password\n9. Activate/Deactivate Customer Account\n10. View loan applications\n11. Assign loan to employee\n12. View customer feedbacks\n0. Logout\n\n");
             printf("Your choice : ");
             scanf("%d", &choice);
         } else {
@@ -207,15 +206,13 @@ void ManagerMenu_client(int sock_fd, struct User *curUserPtr){
                 send(sock_fd, curUserPtr, sizeof(struct User), 0);
                 float amt, prevBal = curUserPtr->balance;
                 int flag;
-
-                //check if withdrawal of amount is possible
+                
                 printf("Enter amount to transfer : ");
                 scanf("%f", &amt);
                 send(sock_fd, &amt, sizeof(amt), 0);
                 read(sock_fd, &flag, sizeof(flag));
 
-                if (flag == 1){
-                    //check is receiver is valid
+                if (flag == 1){                    
                     char rcvr[MAXSTR];
                     printf("Enter the username of the receiver : ");
                     scanf("%s", rcvr);

@@ -2,7 +2,7 @@
 
 
 int main() {
-    // 1. Initialize an array of structs with your data
+    
     struct User records_to_write[] = {
         {"abhi", "jeet", "Abhijeet", "Rai", "jua001", 1, 0, RC, 100000},
         {"abhii", "guptil", "Abhijeet", "Gupta", "gup001", 1, 0, RC, 100000},
@@ -12,22 +12,19 @@ int main() {
         {"poo", "jan", "Poojan", "Pandya", "poo001", 1, 0, RE, 100000}
     };
     
-    // Calculate how many records are in the array
+    
     int num_records = sizeof(records_to_write) / sizeof(struct User);
 
-    // 2. Open the file
+    
     FILE *file_ptr;
-    // "wb" means "write binary"
+    
     file_ptr = fopen(USERDETAILSFILE, "wb"); 
 
     if (file_ptr == NULL) {
         perror("Error opening file");
-        return 1; // Exit with an error
+        return 1; 
     }
-
-    // 3. Write the data
-    // We write 'num_records' items, each with the size of 'struct Record',
-    // from the 'records_to_write' array into the 'file_ptr'.
+    
     size_t items_written = fwrite(records_to_write, sizeof(struct User), num_records, file_ptr);
 
     if (items_written != num_records) {
@@ -36,9 +33,9 @@ int main() {
         return 1;
     }
 
-    // 4. Close the file
+    
     fclose(file_ptr);
 
     printf("Successfully wrote %d records to %s.\n", num_records, USERDETAILSFILE);
-    return 0; // Success
+    return 0; 
 }

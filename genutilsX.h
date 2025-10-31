@@ -136,4 +136,6 @@ int changeStatLoan(int loanID, int stat);
 
 int modifyRole(char username[MAXSTR], int role);
 
+void getAllTxnDetails(int client_fd);
+
 #endif
