@@ -130,3 +130,44 @@ struct User getDetails_server(int client_fd, struct User *curUserPtr){
     close(fd);
     return *curUserPtr;
 }
+
+struct User deposit_server(int client_fd, struct User *curUserPtr, float amt){
+    read(client_fd, curUserPtr, sizeof(struct User));
+    printf("User %s chose to deposit\n", curUserPtr->username);
+
+    int fd1 = open(TXNSFILE, O_WRONLY | O_APPEND);
+    int fd2 = open(USERDETAILSFILE, O_RDWR);
+    apply_lock(fd2, F_WRLCK);
+    struct User record;
+    struct Txn txnRecord = { .amt = amt };
+    strcpy(txnRecord.sender, curUserPtr->username);
+    strcpy(txnRecord.receiver, curUserPtr->username);
+    ssize_t bytes_read;
+
+    while ((bytes_read = read(fd2, &record, sizeof(record))) > 0) {
+        // Check for a partial read, which might mean a corrupt file
+        if (bytes_read != sizeof(record)) {
+            safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
+            continue;
+        }
+        if (strcmp(curUserPtr->username, record.username) == 0) {
+            if (record.isActive){
+                //log the deposit txn
+                record.balance += amt;
+                apply_lock(fd1, F_WRLCK);
+                txnRecord.senderBalAfterTxn = record.balance;
+                write(fd1, &txnRecord, sizeof(struct Txn));
+                apply_lock(fd1, F_UNLCK);
+
+                lseek(fd2, -1*sizeof(record), SEEK_CUR);
+                write(fd2, &record, sizeof(record));
+            }
+            *curUserPtr = record;
+            break;
+        }
+    }
+    apply_lock(fd2, F_UNLCK);
+    close(fd1);
+    close(fd2);
+    return *curUserPtr;
+}

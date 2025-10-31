@@ -28,6 +28,7 @@
 #define MAXSTR 50
 
 #define USERDETAILSFILE "users.dat"
+#define TXNSFILE "txns.dat"
 
 #define ACCOUNTDISABLEDMSG "Your account was disabled, please contact your bank manager!\n"
 
@@ -45,6 +46,13 @@ struct User {
     float balance;
 };
 
+struct Txn {
+    char sender[MAXSTR];
+    char receiver[MAXSTR];
+    float amt;
+    float senderBalAfterTxn;
+};
+
 
 //funcs
 void safe_write(int fd, const char *msg);
@@ -55,8 +63,10 @@ void apply_manlock(int fd, int lock_type);
 
 struct User verifyLogin(int client_fd, struct User *curUserPtr);
 
+struct User logout_server(int client_fd, struct User *curUserPtr);
+
 struct User getDetails_server(int client_fd, struct User *curUserPtr);
 
-struct User logout_server(int client_fd, struct User *curUserPtr);
+struct User deposit_server(int client_fd, struct User *curUserPtr, float amt);
 
 #endif
