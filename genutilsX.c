@@ -343,3 +343,30 @@ void getTxnDetails(int client_fd, struct User *curUserPtr){
     apply_lock(fd, F_UNLCK);
     close(fd);
 }
+
+struct User changePassword_server(struct User *curUserPtr, char newPassword[1024]){
+    int fd = open(USERDETAILSFILE, O_RDWR);
+    apply_lock(fd, F_WRLCK);
+    struct User record;
+    ssize_t bytes_read;
+
+    while ((bytes_read = read(fd, &record, sizeof(record))) > 0) {
+        // Check for a partial read, which might mean a corrupt file
+        if (bytes_read != sizeof(record)) {
+            safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
+            continue;
+        }
+        if (strcmp(curUserPtr->username, record.username) == 0) {
+            if (record.isActive){
+                strcpy(record.password, newPassword);
+                lseek(fd, -1*sizeof(record), SEEK_CUR);
+                write(fd, &record, sizeof(record));
+            }
+            *curUserPtr = record;
+            break;
+        }
+    }
+    apply_lock(fd, F_UNLCK);
+    close(fd);
+    return *curUserPtr;
+}

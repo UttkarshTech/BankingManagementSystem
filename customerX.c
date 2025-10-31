@@ -65,6 +65,18 @@ void CustomerMenu_server(int client_fd, struct User *curUserPtr){
                 getTxnDetails(client_fd, curUserPtr);
             }
             break;
+            case 8 : {
+                read(client_fd, curUserPtr, sizeof(struct User));
+                int flag;
+                read(client_fd, &flag, sizeof(flag));
+                if (flag){
+                    char newPassword[MAXSTR];
+                    read(client_fd, &newPassword, sizeof(newPassword));
+                    *curUserPtr = changePassword_server(curUserPtr, newPassword);
+                    send(client_fd, curUserPtr, sizeof(struct User), 0);
+                }
+            }
+            break;
             default : break;
         }
     }
@@ -185,6 +197,29 @@ void CustomerMenu_client(int sock_fd, struct User *curUserPtr){
                 while (strcmp(temp, "END") != 0){
                     printf("%s\n", temp);
                     read(sock_fd, temp, sizeof(temp));
+                }
+            }
+            break;
+            case 8 : {
+                send(sock_fd, curUserPtr, sizeof(struct User), 0);
+                char oldPassword[MAXSTR], newPassword[MAXSTR];
+                int flag = 0;
+                printf("Enter old Password : ");
+                scanf("%s", oldPassword);
+                if (strcmp(curUserPtr->password, oldPassword) != 0){
+                    printf("Passwords do not match.\n");
+                    send(sock_fd, &flag, sizeof(flag), 0);
+                    break;
+                }
+                flag = 1;
+                send(sock_fd, &flag, sizeof(flag), 0);
+                printf("Enter new Password : ");
+                scanf("%s", newPassword);
+                send(sock_fd, &newPassword, sizeof(newPassword), 0);
+                read(sock_fd, curUserPtr, sizeof(struct User));
+                if (curUserPtr->isActive){
+                    printf("Password changed!\n");
+                    break;
                 }
             }
             break;

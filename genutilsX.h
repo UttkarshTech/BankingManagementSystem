@@ -80,4 +80,6 @@ struct User makeTxn(struct User *curUserPtr, float amount, char rcvr[MAXSTR]);
 
 void getTxnDetails(int client_fd, struct User *curUserPtr);
 
+struct User changePassword_server(struct User *curUserPtr, char newPassword[1024]);
+
 #endif
