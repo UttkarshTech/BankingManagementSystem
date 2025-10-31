@@ -24,6 +24,11 @@
 #define RM 22
 #define RE 23
 
+#define LAPPLIED 0
+#define LASSIGNED 1
+#define LAPPROVED 2
+#define LREJECTED -1
+
 #define BACKLOG 5
 #define MAXSTR 50
 #define FEEDBACKLEN 2048
@@ -31,6 +36,9 @@
 #define USERDETAILSFILE "users.dat"
 #define TXNSFILE "txns.dat"
 #define FBFILE "feedbacks.dat"
+#define LOANSFILE "loans.dat"
+#define LOANSIDFILE "loanid.dat"
+
 
 #define ACCOUNTDISABLEDMSG "Your account was disabled, please contact your bank manager!\n"
 
@@ -61,13 +69,22 @@ struct Fback {
     char feedback[FEEDBACKLEN];
 };
 
+struct Loan {
+    int loanID;
+    char username[MAXSTR];
+    char manager[MAXSTR];
+    char employee[MAXSTR];
+    float loanAmount;
+    int status;
+};
+
 
 //funcs
 void safe_write(int fd, const char *msg);
 
 int safe_read_line(int fd, char *buffer, int size);
 
-void apply_manlock(int fd, int lock_type);
+void apply_lock(int fd, int lock_type);
 
 struct User verifyLogin(int client_fd, struct User *curUserPtr);
 
@@ -81,6 +98,8 @@ struct User withdraw_server(int client_fd, struct User *curUserPtr, float amt);
 
 int validateUsername(char *username);
 
+int validateUsernameAndRole(char *username, int role);
+
 int validateWithdrawal(char *username, float amount);
 
 struct User makeTxn(struct User *curUserPtr, float amount, char rcvr[MAXSTR]);
@@ -90,5 +109,7 @@ void getTxnDetails(int client_fd, struct User *curUserPtr);
 struct User changePassword_server(struct User *curUserPtr, char newPassword[1024]);
 
 void addFeedback(char username[MAXSTR], char feedback[FEEDBACKLEN]);
+
+int addLoan(char username[MAXSTR], char manager[MAXSTR], float loanAmount);
 
 #endif

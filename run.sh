@@ -5,5 +5,6 @@ gcc server.o *X.o -o server.out
 gcc client.o *X.o -o client.out
 touch users.dat
 touch feedbacks.dat
+touch loans.dat
 ./reset.sh
 ./server.out

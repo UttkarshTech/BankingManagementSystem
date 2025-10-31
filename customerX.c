@@ -64,6 +64,19 @@ void CustomerMenu_server(int client_fd, struct User *curUserPtr){
                 read(client_fd, curUserPtr, sizeof(struct User));
                 getTxnDetails(client_fd, curUserPtr);
             }
+            case 6 : {
+                read(client_fd, curUserPtr, sizeof(struct User));
+                float amount;
+                char manager[MAXSTR];
+                read(client_fd, &amount, sizeof(amount));
+                read(client_fd, manager, sizeof(manager));
+                int flag = validateUsernameAndRole(manager, RM);
+                send(client_fd, &flag, sizeof(flag), 0);
+                if (flag == 1){
+                    flag = addLoan(curUserPtr->username, manager, amount);
+                    send(client_fd, &flag, sizeof(flag), 0);
+                }
+            }
             break;
             case 7 : {
                 read(client_fd, curUserPtr, sizeof(struct User));
@@ -208,6 +221,31 @@ void CustomerMenu_client(int sock_fd, struct User *curUserPtr){
                     printf("%s\n", temp);
                     read(sock_fd, temp, sizeof(temp));
                 }
+            }
+            case 6 : {
+                send(sock_fd, curUserPtr, sizeof(struct User), 0);
+                float amount;
+                char manager[MAXSTR];
+                printf("Enter loan amount : ");
+                scanf("%f", &amount);
+                printf("Enter manager username : ");
+                scanf("%s", manager);
+                send(sock_fd, &amount, sizeof(amount), 0);
+                send(sock_fd, manager, sizeof(manager), 0);
+                int flag;
+
+                read(sock_fd, &flag, sizeof(flag));
+                if (flag != 1){
+                    printf("%s is not a manager.\n", manager);
+                    break;
+                }
+
+                read(sock_fd, &flag, sizeof(flag));
+                if (flag == 1){
+                    printf("You have successfully applied for the loan!\n");
+                    break;
+                } else printf("Loan application failed.\n");
+
             }
             break;
             case 7 : {

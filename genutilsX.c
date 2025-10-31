@@ -238,6 +238,29 @@ int validateUsername(char *username){
     return flag;
 }
 
+int validateUsernameAndRole(char *username, int role){
+    int fd = open(USERDETAILSFILE, O_RDONLY);
+    apply_lock(fd, F_RDLCK);
+    struct User record;
+    ssize_t bytes_read;
+    int flag = 0;
+    while ((bytes_read = read(fd, &record, sizeof(record))) > 0) {
+        // Check for a partial read, which might mean a corrupt file
+        if (bytes_read != sizeof(record)) {
+            safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
+            continue;
+        }
+        if (strcmp(username, record.username) == 0) {
+            if (record.isActive && record.role == role) flag = 1;
+            else flag = -1;
+            break;
+        }
+    }
+    apply_lock(fd, F_UNLCK);
+    close(fd);
+    return flag;
+}
+
 int validateWithdrawal(char *username, float amount){
     int fd = open(USERDETAILSFILE, O_RDONLY);
     apply_lock(fd, F_RDLCK);
@@ -381,4 +404,32 @@ void addFeedback(char username[MAXSTR], char feedback[FEEDBACKLEN]) {
     write(fd, &fb, sizeof(fb));
     apply_lock(fd, F_UNLCK);
     close(fd);
+}
+
+int addLoan(char username[MAXSTR], char manager[MAXSTR], float loanAmount){
+    int loanID;
+    int fdi = open(LOANSIDFILE, O_RDWR);
+    apply_lock(fdi, F_WRLCK);
+    read(fdi, &loanID, sizeof(loanID));
+    lseek(fdi, 0, SEEK_SET);
+    loanID++;
+    write(fdi, &loanID, sizeof(loanID));
+    apply_lock(fdi, F_UNLCK);
+    close(fdi);
+    printf("New loanID = %d\n", loanID);
+    
+    struct Loan loan = { .loanAmount = loanAmount, .status = LAPPLIED, .loanID = loanID };
+
+    strcpy(loan.username, username);
+    strcpy(loan.manager, manager);
+    strcpy(loan.employee, "NULL");
+    ssize_t bytes;
+    int flag = 0;
+
+    int fd = open(LOANSFILE, O_WRONLY | O_APPEND);
+    apply_lock(fd, F_WRLCK);
+    if((bytes = write(fd, &loan, sizeof(loan))) == sizeof(loan) ) flag = 1;
+    apply_lock(fd, F_UNLCK);
+    close(fd);
+    return flag;
 }
