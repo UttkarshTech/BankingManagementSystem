@@ -478,3 +478,25 @@ void viewAllLoanApplications(int client_fd) {
     close(fd);
 
 }
+
+void viewAllFeedbacks (int client_fd){
+    int fd = open(FBFILE, O_RDONLY);
+    struct Fback fb;
+    ssize_t bytes_read;
+    apply_lock(fd, F_RDLCK);
+    while ((bytes_read = read(fd, &fb, sizeof(fb))) > 0) {
+        // Check for a partial read, which might mean a corrupt file
+        if (bytes_read != sizeof(fb)) {
+            safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
+            continue;
+        }
+        char temp[FEEDBACKLEN + 2*MAXSTR];
+        snprintf(temp, sizeof(temp), "Username: %s, Feedback: %s", 
+        fb.username, fb.feedback);
+        send(client_fd, temp, sizeof(temp), 0);
+    }
+    char temp[1024] = "END";
+    send(client_fd, temp, sizeof(temp), 0);
+    apply_lock(fd, F_UNLCK);
+    close(fd);
+}

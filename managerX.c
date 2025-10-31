@@ -114,6 +114,12 @@ void ManagerMenu_server(int client_fd, struct User *curUserPtr){
                 viewAllLoanApplications(client_fd);
             }
             break;
+            case 12 : {
+                read(client_fd, curUserPtr, sizeof(struct User));
+                viewAllFeedbacks(client_fd);
+
+            } 
+            break;
             default : break;
         }
     }
@@ -123,7 +129,7 @@ void ManagerMenu_client(int sock_fd, struct User *curUserPtr){
     int choice = 1;
     while (choice){
         if (curUserPtr->isActive){
-            printf("\n\n---MANAGER MENU---\n1. View Account Balance\n2. Deposit Money\n3. Withdraw Money\n4. Transfer Funds\n5. View All Transactions\n6. Apply for a Loan\n7. Leave a feedback\n8. Change Password\n9. Activate/Deactivate Customer Account\n10. View loan applications\n0. Logout\n\n");
+            printf("\n\n---MANAGER MENU---\n1. View Account Balance\n2. Deposit Money\n3. Withdraw Money\n4. Transfer Funds\n5. View All Transactions\n6. Apply for a Loan\n7. Leave a feedback\n8. Change Password\n9. Activate/Deactivate Customer Account\n10. View loan applications\n11. Assign loan to employee\n12. View customer feedbacks\n0. Logout\n\n");
             printf("Your choice : ");
             scanf("%d", &choice);
         } else {
@@ -324,6 +330,21 @@ void ManagerMenu_client(int sock_fd, struct User *curUserPtr){
                     read(sock_fd, temp, sizeof(temp));
                 }
 
+            }
+            break;
+            case 12 : {
+                send(sock_fd, curUserPtr, sizeof(curUserPtr), 0);
+                char temp[FEEDBACKLEN + 2*MAXSTR];
+                read(sock_fd, temp, sizeof(temp));
+                if (strcmp(temp, "END") == 0){
+                    printf("No feedbacks.\n");
+                    break;
+                }
+                printf("\n---Customer Feedbacks---\n");
+                while (strcmp(temp, "END") != 0){
+                    printf("%s\n", temp);
+                    read(sock_fd, temp, sizeof(temp));
+                }
             }
             break;
             default : break;

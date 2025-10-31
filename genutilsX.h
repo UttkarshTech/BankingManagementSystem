@@ -116,4 +116,6 @@ void changeCustomerStatus(char username[MAXSTR], int stat);
 
 void viewAllLoanApplications(int client_fd);
 
+void viewAllFeedbacks (int client_fd);
+
 #endif
