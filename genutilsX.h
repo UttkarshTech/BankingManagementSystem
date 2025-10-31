@@ -126,4 +126,6 @@ int checkUniqueUsername(char username[MAXSTR]);
 
 int addNewCustomer(struct User *newCustomerPtr);
 
+int modifyCustomer(char username[MAXSTR], char firstName[MAXSTR], char lastName[MAXSTR]);
+
 #endif

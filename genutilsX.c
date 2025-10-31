@@ -581,3 +581,29 @@ int addNewCustomer(struct User *newCustomerPtr){
     close(fd);
     return flag;
 }
+
+int modifyCustomer(char username[MAXSTR], char firstName[MAXSTR], char lastName[MAXSTR]){
+    int flag = 0;
+    int fd = open(USERDETAILSFILE, O_RDWR);
+    apply_lock(fd, F_WRLCK);
+    struct User record;
+    ssize_t bytes_read;
+    while ((bytes_read = read(fd, &record, sizeof(record))) > 0) {
+        // Check for a partial read, which might mean a corrupt file
+        if (bytes_read != sizeof(record)) {
+            safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
+            continue;
+        }
+        if (strcmp(username, record.username) == 0) {
+            strcpy(record.firstName, firstName);
+            strcpy(record.lastName, lastName);
+            lseek(fd, -1*sizeof(record), SEEK_CUR);
+            write(fd, &record, sizeof(record));
+            flag = 1;
+            break;
+        }
+    }
+    apply_lock(fd, F_UNLCK);
+    close(fd);
+    return flag;
+}
