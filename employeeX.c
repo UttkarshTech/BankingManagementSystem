@@ -140,6 +140,21 @@ void EmployeeMenu_server(int client_fd, struct User *curUserPtr){
                 viewAllAssignedLoanApplications(curUserPtr->username, client_fd);
             }
             break;
+            case 12 : {
+                int loanID = 0;
+                int flag = 0;
+                read(client_fd, curUserPtr, sizeof(struct User));
+                read(client_fd, &loanID, sizeof(loanID));
+                flag = validateLoanID(loanID);
+                send(client_fd, &flag, sizeof(flag), 0);
+                if (flag == 1){
+                    int stat;
+                    read(client_fd, &stat, sizeof(stat));
+                    flag = changeStatLoan(loanID, stat);
+                    send(client_fd, &flag, sizeof(flag), 0);
+                }
+            }
+            break;
             default : break;
         }
     }
@@ -149,7 +164,7 @@ void EmployeeMenu_client(int sock_fd, struct User *curUserPtr){
     int choice = 1;
     while (choice){
         if (curUserPtr->isActive){
-            printf("\n\n---EMPLOYEE MENU---\n1. View Account Balance\n2. Deposit Money\n3. Withdraw Money\n4. Transfer Funds\n5. View All Transactions\n6. Apply for a Loan\n7. Leave a feedback\n8. Change Password\n9. Add new customer\n10. Modify customer details\n11. View assigned loans\n0. Logout\n\n");
+            printf("\n\n---EMPLOYEE MENU---\n1. View Account Balance\n2. Deposit Money\n3. Withdraw Money\n4. Transfer Funds\n5. View All Transactions\n6. Apply for a Loan\n7. Leave a feedback\n8. Change Password\n9. Add new customer\n10. Modify customer details\n11. View assigned loans\n12. Approve/Reject loans\n0. Logout\n\n");
             printf("Your choice : ");
             scanf("%d", &choice);
         } else {
@@ -386,6 +401,40 @@ void EmployeeMenu_client(int sock_fd, struct User *curUserPtr){
                 while (strcmp(temp, "END") != 0){
                     printf("%s\n", temp);
                     read(sock_fd, temp, sizeof(temp));
+                }
+
+            }
+            break;
+            case 12 : {
+                send(sock_fd, curUserPtr, sizeof(curUserPtr), 0);
+                int loanID, flag = 0;
+                printf("Enter loanID : ");
+                scanf("%d", &loanID);
+                send(sock_fd, &loanID, sizeof(loanID), 0);
+                read(sock_fd, &flag, sizeof(flag));
+                if (flag == 0){
+                    printf("Invalid loan id.\n");
+                    break;
+                }
+                else if (flag == -1){
+                    printf("Loan not assigned to you.\n");
+                    break;
+                }
+                else if (flag == 1){
+                    int stat;
+                    printf("Approve (1) / Reject (0) ? : ");
+                    scanf("%d", &stat);
+                    if (stat >= 1) stat = LAPPROVED;
+                    else stat = LREJECTED;
+                    send(sock_fd, &stat, sizeof(stat), 0);
+                    read(sock_fd, &flag, sizeof(flag));
+                    if (flag != 1){
+                        printf("Action failed.\n");
+                        break;
+                    } else {
+                        printf("Action successful!\n");
+                        break;
+                    }
                 }
 
             }

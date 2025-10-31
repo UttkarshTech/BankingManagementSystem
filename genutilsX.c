@@ -528,7 +528,7 @@ int assignLoan(int loanID, char employee[MAXSTR]){
     int flag = 0;
     struct Loan loan;
     ssize_t bytes_read;
-    apply_lock(fd, F_RDLCK);
+    apply_lock(fd, F_WRLCK);
     while ((bytes_read = read(fd, &loan, sizeof(loan))) > 0) {
         // Check for a partial read, which might mean a corrupt file
         if (bytes_read != sizeof(loan)) {
@@ -630,6 +630,87 @@ void viewAllAssignedLoanApplications(char username[MAXSTR], int client_fd){
     send(client_fd, temp, sizeof(temp), 0);
     apply_lock(fd, F_UNLCK);
     close(fd);
+}
 
-    
+int loanEmployeeCheck(int loanID, char username[MAXSTR]){
+    int flag = 0;
+    int fd = open(LOANSFILE, O_RDONLY);
+    struct Loan loan;
+    ssize_t bytes_read;
+    apply_lock(fd, F_RDLCK);
+    while ((bytes_read = read(fd, &loan, sizeof(loan))) > 0) {
+        // Check for a partial read, which might mean a corrupt file
+        if (bytes_read != sizeof(loan)) {
+            safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
+            continue;
+        }
+        if (loan.loanID == loanID) {
+            if (strcmp(loan.employee, username) == 0){
+                flag = 1;
+                break;
+            } else {
+                flag = -1;
+                break;
+            }
+        }
+    }
+    apply_lock(fd, F_UNLCK);
+    close(fd);
+    return flag;
+}
+
+int changeStatLoan(int loanID, int stat){
+    int fd = open(LOANSFILE, O_RDWR);
+    int fdi = open(USERDETAILSFILE, O_RDWR);
+    int flag = 0;
+    char customer[MAXSTR];
+    float amount;
+    struct Loan loan;
+    struct User record;
+    ssize_t bytes_read;
+    apply_lock(fdi, F_WRLCK);
+    apply_lock(fd, F_WRLCK);
+    while ((bytes_read = read(fd, &loan, sizeof(loan))) > 0) {
+        // Check for a partial read, which might mean a corrupt file
+        if (bytes_read != sizeof(loan)) {
+            safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
+            continue;
+        }
+        if (loan.loanID == loanID){
+            strcpy(customer, loan.username);
+            amount = loan.loanAmount;
+            loan.status = stat;
+            lseek(fd, -1*sizeof(loan), SEEK_CUR);
+            write(fd, &loan, sizeof(loan));
+            printf("hit!\n");
+            if (stat == LAPPROVED){
+                ssize_t bytes;
+                while ((bytes = read(fdi, &record, sizeof(record))) > 0) {
+                    // Check for a partial read, which might mean a corrupt file
+                    if (bytes != sizeof(record)) {
+                        safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
+                        continue;
+                    }
+                    if (strcmp(customer, record.username) == 0){
+                        record.balance += amount;
+                        lseek(fdi, -1*sizeof(record), SEEK_CUR);
+                        write(fdi, &record, sizeof(record));
+                        flag = 1;
+                        printf("hit!\n");
+                        printf("%d\n", flag);
+                        break;
+                    }
+                }
+                break;
+            } else flag = 1;
+
+            printf("hit!\n");
+            break;
+        }
+    }
+    apply_lock(fd, F_UNLCK);
+    apply_lock(fdi, F_UNLCK);
+    printf("%d\n", flag);
+    close(fd);
+    return flag;
 }

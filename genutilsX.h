@@ -130,4 +130,8 @@ int modifyCustomer(char username[MAXSTR], char firstName[MAXSTR], char lastName[
 
 void viewAllAssignedLoanApplications(char username[MAXSTR], int client_fd);
 
+int loanEmployeeCheck(int loanID, char username[MAXSTR]);
+
+int changeStatLoan(int loanID, int stat);
+
 #endif
