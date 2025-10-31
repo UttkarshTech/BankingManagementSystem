@@ -120,6 +120,22 @@ void AdminMenu_server(int client_fd, struct User *curUserPtr){
                 }
             }
             break;
+            case 10 : {
+                int flag = 0;
+                char username[MAXSTR], firstName[MAXSTR], lastName[MAXSTR];
+                read(client_fd, username, sizeof(username));
+                flag = validateUsernameAndRole(username, RC);
+                if (flag != 1) flag = validateUsernameAndRole(username, RE);
+                send(client_fd, &flag, sizeof(flag), 0);
+                if (flag == 1){
+                    read(client_fd, firstName, sizeof(firstName));
+                    read(client_fd, lastName, sizeof(lastName));
+                    flag = modifyCustomer(username, firstName, lastName);
+                    send(client_fd, &flag, sizeof(flag), 0);
+                }
+
+            }
+            break;
             default : break;
         }
     }
@@ -129,7 +145,7 @@ void AdminMenu_client(int sock_fd, struct User *curUserPtr){
     int choice = 1;
     while (choice){
         if (curUserPtr->isActive){
-            printf("\n\n---CUSTOMER MENU---\n1. View Account Balance\n2. Deposit Money\n3. Withdraw Money\n4. Transfer Funds\n5. View All Transactions\n6. Apply for a Loan\n7. Leave a feedback\n8. Change Password\n9. Add new employee\n0. Logout\n\n");
+            printf("\n\n---CUSTOMER MENU---\n1. View Account Balance\n2. Deposit Money\n3. Withdraw Money\n4. Transfer Funds\n5. View All Transactions\n6. Apply for a Loan\n7. Leave a feedback\n8. Change Password\n9. Add new employee\n10. Modify Customer/Employee details\n0. Logout\n\n");
             printf("Your choice : ");
             scanf("%d", &choice);
         } else {
@@ -329,6 +345,32 @@ void AdminMenu_client(int sock_fd, struct User *curUserPtr){
 
             }
             break;
+            case 10 : {
+                int flag = 0;
+                char username[MAXSTR], firstName[MAXSTR], lastName[MAXSTR];
+                printf("Enter username for the user to edit : ");
+                scanf("%s", username);
+                send(sock_fd, username, sizeof(username), 0);
+                read(sock_fd, &flag, sizeof(flag));
+                if (flag != 1){
+                    printf("User does not exist...\n");
+                    break;
+                }
+                printf("Enter new first name of user : ");
+                scanf("%s", firstName);
+                printf("Enter new last name of user : ");
+                scanf("%s", lastName);
+                send(sock_fd, firstName, sizeof(firstName), 0);
+                send(sock_fd, lastName, sizeof(lastName), 0);
+                read(sock_fd, &flag, sizeof(flag));
+                if (flag != 1){
+                    printf("User not modified...\n");
+                    break;
+                }
+                printf("User modified succesfully!\n");
+                break;
+
+            }
             default : break;
         }
     }
