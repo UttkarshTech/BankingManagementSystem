@@ -118,4 +118,8 @@ void viewAllLoanApplications(int client_fd);
 
 void viewAllFeedbacks (int client_fd);
 
+int validateLoanID(int loanID);
+
+int assignLoan(int loanID, char employee[MAXSTR]);
+
 #endif

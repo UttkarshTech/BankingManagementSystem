@@ -114,6 +114,26 @@ void ManagerMenu_server(int client_fd, struct User *curUserPtr){
                 viewAllLoanApplications(client_fd);
             }
             break;
+            case 11 : {
+                int loanID = 0;
+                char employee[MAXSTR];
+                int flag = 0;
+                read(client_fd, curUserPtr, sizeof(struct User));
+                read(client_fd, &loanID, sizeof(loanID));
+                flag = validateLoanID(loanID);
+                send(client_fd, &flag, sizeof(flag), 0);
+                if (flag == 1){
+                    read(client_fd, employee, sizeof(employee));
+                    flag = validateUsernameAndRole(employee, RE);
+                    send(client_fd, &flag, sizeof(flag), 0);
+                    if (flag == 1){
+                        printf("Assigning\n");
+                        flag = assignLoan(loanID, employee);
+                        send(client_fd, &flag, sizeof(flag), 0);
+                    }
+                }
+            }
+            break;
             case 12 : {
                 read(client_fd, curUserPtr, sizeof(struct User));
                 viewAllFeedbacks(client_fd);
@@ -330,6 +350,38 @@ void ManagerMenu_client(int sock_fd, struct User *curUserPtr){
                     read(sock_fd, temp, sizeof(temp));
                 }
 
+            }
+            break;
+            case 11 : {
+                int loanID, flag = 0;
+                char employee[MAXSTR];
+                send(sock_fd, curUserPtr, sizeof(curUserPtr), 0);
+
+                printf("Enter loanID : ");
+                scanf("%d", &loanID);
+                send(sock_fd, &loanID, sizeof(loanID), 0);
+                read(sock_fd, &flag, sizeof(flag));
+
+                if (flag != 1){
+                    printf("Invalid loanID : %d\n", loanID);
+                    break;
+                }
+                printf("Enter employee username : ");
+                scanf("%s", employee);
+                send(sock_fd, employee, sizeof(employee), 0);
+                read(sock_fd, &flag, sizeof(flag));
+                if (flag != 1){
+                    printf("%s is not an employee\n", employee);
+                    break;
+                }
+                printf("Assigning...\n");
+                read(sock_fd, &flag, sizeof(flag));
+                if (flag != 1){
+                    printf("Loan application assignment failed, maybe loan was not in application stage...\n");
+                    break;
+                }
+                printf("Loan application assigned successfully!\n");
+                break;
             }
             break;
             case 12 : {

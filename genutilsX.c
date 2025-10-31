@@ -500,3 +500,51 @@ void viewAllFeedbacks (int client_fd){
     apply_lock(fd, F_UNLCK);
     close(fd);
 }
+
+int validateLoanID(int loanID){
+    int fd = open(LOANSFILE, O_RDONLY);
+    struct Loan loan;
+    ssize_t bytes_read;
+    int flag = 0;
+    apply_lock(fd, F_RDLCK);
+    while ((bytes_read = read(fd, &loan, sizeof(loan))) > 0) {
+        // Check for a partial read, which might mean a corrupt file
+        if (bytes_read != sizeof(loan)) {
+            safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
+            continue;
+        }
+        if (loan.loanID == loanID){
+            flag = 1;
+            break;
+        }
+    }
+    apply_lock(fd, F_UNLCK);
+    close(fd);
+    return flag;
+}
+
+int assignLoan(int loanID, char employee[MAXSTR]){
+    int fd = open(LOANSFILE, O_RDWR);
+    int flag = 0;
+    struct Loan loan;
+    ssize_t bytes_read;
+    apply_lock(fd, F_RDLCK);
+    while ((bytes_read = read(fd, &loan, sizeof(loan))) > 0) {
+        // Check for a partial read, which might mean a corrupt file
+        if (bytes_read != sizeof(loan)) {
+            safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
+            continue;
+        }
+        if (loan.loanID == loanID && loan.status == LAPPLIED){
+            strcpy(loan.employee, employee);
+            loan.status = LASSIGNED;
+            lseek(fd, -1*sizeof(loan), SEEK_CUR);
+            write(fd, &loan, sizeof(loan));
+            flag = 1;
+            break;
+        }
+    }
+    apply_lock(fd, F_UNLCK);
+    close(fd);
+    return flag;
+}
