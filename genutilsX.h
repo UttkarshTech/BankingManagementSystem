@@ -122,4 +122,8 @@ int validateLoanID(int loanID);
 
 int assignLoan(int loanID, char employee[MAXSTR]);
 
+int checkUniqueUsername(char username[MAXSTR]);
+
+int addNewCustomer(struct User *newCustomerPtr);
+
 #endif

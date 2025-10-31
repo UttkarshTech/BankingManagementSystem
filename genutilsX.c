@@ -548,3 +548,36 @@ int assignLoan(int loanID, char employee[MAXSTR]){
     close(fd);
     return flag;
 }
+
+int checkUniqueUsername(char username[MAXSTR]){
+    int flag = 1;
+    int fd = open(USERDETAILSFILE, O_RDONLY);
+    apply_lock(fd, F_RDLCK);
+    struct User record;
+    ssize_t bytes_read;
+    while ((bytes_read = read(fd, &record, sizeof(record))) > 0) {
+        // Check for a partial read, which might mean a corrupt file
+        if (bytes_read != sizeof(record)) {
+            safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
+            continue;
+        }
+        if (strcmp(username, record.username) == 0) {
+            if (record.isActive) flag = 0;
+            break;
+        }
+    }
+    apply_lock(fd, F_UNLCK);
+    close(fd);
+    return flag;
+}
+
+int addNewCustomer(struct User *newCustomerPtr){
+    int flag = 0;
+    int fd = open(USERDETAILSFILE, O_WRONLY | O_APPEND);
+    ssize_t bytes;
+    apply_lock(fd, F_WRLCK);
+    if((bytes = write(fd, newCustomerPtr, sizeof(*newCustomerPtr))) == sizeof(*newCustomerPtr) ) flag = 1;
+    apply_lock(fd, F_UNLCK);
+    close(fd);
+    return flag;
+}

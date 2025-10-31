@@ -101,6 +101,25 @@ void EmployeeMenu_server(int client_fd, struct User *curUserPtr){
                 }
             }
             break;
+            case 9 : {
+                int flag = 0;
+                struct User newCustomer = {.role = RC, .isActive = 1, .isLoggedIn = 0, .balance = 0.0 };
+                char username[MAXSTR], firstName[MAXSTR], lastName[MAXSTR];
+                read(client_fd, username, sizeof(username));
+                flag = checkUniqueUsername(username);
+                send(client_fd, &flag, sizeof(flag), 0);
+                if (flag == 1){
+                    read(client_fd, firstName, sizeof(firstName));
+                    read(client_fd, lastName, sizeof(lastName));
+                    strcpy(newCustomer.username, username);
+                    strcpy(newCustomer.firstName, firstName);
+                    strcpy(newCustomer.lastName, lastName);
+                    strcpy(newCustomer.password, "default");
+                    flag = addNewCustomer(&newCustomer);
+                    send(client_fd, &flag, sizeof(flag), 0);
+                }
+            }
+            break;
             default : break;
         }
     }
@@ -110,7 +129,7 @@ void EmployeeMenu_client(int sock_fd, struct User *curUserPtr){
     int choice = 1;
     while (choice){
         if (curUserPtr->isActive){
-            printf("\n\n---CUSTOMER MENU---\n1. View Account Balance\n2. Deposit Money\n3. Withdraw Money\n4. Transfer Funds\n5. View All Transactions\n6. Apply for a Loan\n7. Leave a feedback\n8. Change Password\n0. Logout\n\n");
+            printf("\n\n---EMPLOYEE MENU---\n1. View Account Balance\n2. Deposit Money\n3. Withdraw Money\n4. Transfer Funds\n5. View All Transactions\n6. Apply for a Loan\n7. Leave a feedback\n8. Change Password\n9. Add new customer\n0. Logout\n\n");
             printf("Your choice : ");
             scanf("%d", &choice);
         } else {
@@ -280,6 +299,33 @@ void EmployeeMenu_client(int sock_fd, struct User *curUserPtr){
                     printf("Password changed!\n");
                     break;
                 }
+            }
+            break;
+            case 9 : {
+                int flag = 0;
+                char username[MAXSTR], firstName[MAXSTR], lastName[MAXSTR];
+                printf("Enter username for new customer : ");
+                scanf("%s", username);
+                send(sock_fd, username, sizeof(username), 0);
+                read(sock_fd, &flag, sizeof(flag));
+                if (flag != 1){
+                    printf("Username already taken...\n");
+                    break;
+                }
+
+                printf("Enter first name of new customer : ");
+                scanf("%s", firstName);
+                printf("Enter last name of new customer : ");
+                scanf("%s", lastName);
+                send(sock_fd, firstName, sizeof(firstName), 0);
+                send(sock_fd, lastName, sizeof(lastName), 0);
+                read(sock_fd, &flag, sizeof(flag));
+                if (flag != 1){
+                    printf("New Customer not added...\n");
+                    break;
+                }
+                printf("New Customer added succesfully!\n");
+                break;
             }
             break;
             default : break;
