@@ -134,4 +134,6 @@ int loanEmployeeCheck(int loanID, char username[MAXSTR]);
 
 int changeStatLoan(int loanID, int stat);
 
+int modifyRole(char username[MAXSTR], int role);
+
 #endif

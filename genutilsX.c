@@ -714,3 +714,30 @@ int changeStatLoan(int loanID, int stat){
     close(fd);
     return flag;
 }
+
+
+int modifyRole(char username[MAXSTR], int role){
+    int flag = 0;
+    int fd = open(USERDETAILSFILE, O_RDWR);
+    apply_lock(fd, F_WRLCK);
+    struct User record;
+    ssize_t bytes_read;
+    while ((bytes_read = read(fd, &record, sizeof(record))) > 0) {
+        // Check for a partial read, which might mean a corrupt file
+        if (bytes_read != sizeof(record)) {
+            safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
+            continue;
+        }
+        if (strcmp(username, record.username) == 0) {
+            record.role = role;
+            lseek(fd, -1*sizeof(record), SEEK_CUR);
+            write(fd, &record, sizeof(record));
+            flag = 1;
+            break;
+        }
+    }
+    apply_lock(fd, F_UNLCK);
+    close(fd);
+    return flag;
+
+}

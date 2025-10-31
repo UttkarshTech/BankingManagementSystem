@@ -136,6 +136,20 @@ void AdminMenu_server(int client_fd, struct User *curUserPtr){
 
             }
             break;
+            case 11 : {
+                int flag = 0;
+                char username[MAXSTR]; int role;
+                read(client_fd, username, sizeof(username));
+                flag = validateUsername(username);
+                send(client_fd, &flag, sizeof(flag), 0);
+                if (flag == 1){
+                    read(client_fd, &role, sizeof(role));
+                    flag = modifyRole(username, role);
+                    send(client_fd, &flag, sizeof(flag), 0);
+                }
+
+            }
+            break;
             default : break;
         }
     }
@@ -145,7 +159,7 @@ void AdminMenu_client(int sock_fd, struct User *curUserPtr){
     int choice = 1;
     while (choice){
         if (curUserPtr->isActive){
-            printf("\n\n---CUSTOMER MENU---\n1. View Account Balance\n2. Deposit Money\n3. Withdraw Money\n4. Transfer Funds\n5. View All Transactions\n6. Apply for a Loan\n7. Leave a feedback\n8. Change Password\n9. Add new employee\n10. Modify Customer/Employee details\n0. Logout\n\n");
+            printf("\n\n---ADMIN MENU---\n1. View Account Balance\n2. Deposit Money\n3. Withdraw Money\n4. Transfer Funds\n5. View All Transactions\n6. Apply for a Loan\n7. Leave a feedback\n8. Change Password\n9. Add new employee\n10. Modify Customer/Employee details\n11. Modify user Role\n0. Logout\n\n");
             printf("Your choice : ");
             scanf("%d", &choice);
         } else {
@@ -371,6 +385,40 @@ void AdminMenu_client(int sock_fd, struct User *curUserPtr){
                 break;
 
             }
+            break;
+            case 11 : {
+                int flag = 0;
+                char username[MAXSTR]; int role;
+                printf("Enter username for the user whose role is to be edited : ");
+                scanf("%s", username);
+                send(sock_fd, username, sizeof(username), 0);
+                read(sock_fd, &flag, sizeof(flag));
+                if (flag != 1){
+                    printf("User does not exist...\n");
+                    break;
+                }
+                printf("Choose new role : 1. Customer\n2. Employee\n3. Manager\n4. Admin\nYour choice : ");
+                scanf("%d", &role);
+                switch (role) {
+                    case 1 : role = RC; break;
+                    case 2 : role = RE; break;
+                    case 3 : role = RM; break;
+                    case 4 : role = RA; break;
+                    default : printf("Invalid choice.\n"); break;
+                }
+                if (role < RC){
+                    break;
+                }
+                send(sock_fd, &role, sizeof(role), 0);
+                read(sock_fd, &flag, sizeof(flag));
+                if (flag != 1){
+                    printf("User role not modified...\n");
+                    break;
+                }
+                printf("User role modified succesfully!\n");
+                break;
+            }
+            break;
             default : break;
         }
     }
