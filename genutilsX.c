@@ -433,3 +433,25 @@ int addLoan(char username[MAXSTR], char manager[MAXSTR], float loanAmount){
     close(fd);
     return flag;
 }
+
+void changeCustomerStatus(char username[MAXSTR], int stat){
+    int fd = open(USERDETAILSFILE, O_RDWR);
+    apply_lock(fd, F_WRLCK);
+    struct User record;
+    ssize_t bytes_read;
+    while ((bytes_read = read(fd, &record, sizeof(record))) > 0) {
+        // Check for a partial read, which might mean a corrupt file
+        if (bytes_read != sizeof(record)) {
+            safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
+            continue;
+        }
+        if (strcmp(username, record.username) == 0) {
+            record.isActive = stat;
+            lseek(fd, -1*sizeof(record), SEEK_CUR);
+            write(fd, &record, sizeof(record));
+            break;
+        }
+    }
+    apply_lock(fd, F_UNLCK);
+    close(fd);
+}

@@ -112,4 +112,6 @@ void addFeedback(char username[MAXSTR], char feedback[FEEDBACKLEN]);
 
 int addLoan(char username[MAXSTR], char manager[MAXSTR], float loanAmount);
 
+void changeCustomerStatus(char username[MAXSTR], int stat);
+
 #endif

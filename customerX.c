@@ -64,6 +64,7 @@ void CustomerMenu_server(int client_fd, struct User *curUserPtr){
                 read(client_fd, curUserPtr, sizeof(struct User));
                 getTxnDetails(client_fd, curUserPtr);
             }
+            break;
             case 6 : {
                 read(client_fd, curUserPtr, sizeof(struct User));
                 float amount;

@@ -1,9 +1,8 @@
 #include "genutilsX.h"
 #include "customerX.h"
-
-void AdminMenu_server(){}
-void ManagerMenu_server(){}
-void EmployeeMenu_server(){}
+#include "employeeX.h"
+#include "adminX.h"
+#include "managerX.h"
 
 void* client_handler(void* arg) {
     pthread_t tid = pthread_self();
@@ -19,9 +18,9 @@ void* client_handler(void* arg) {
     if (curUser.isLoggedIn == 1){
         switch(curUser.role){
             case RC : CustomerMenu_server(client_fd, &curUser); break;
-            case RA : AdminMenu_server(); break;
-            case RM : ManagerMenu_server(); break;
-            case RE : EmployeeMenu_server(); break;
+            case RA : AdminMenu_server(client_fd, &curUser); break;
+            case RM : ManagerMenu_server(client_fd, &curUser);; break;
+            case RE : EmployeeMenu_server(client_fd, &curUser); break;
             default : break;
         }
     }

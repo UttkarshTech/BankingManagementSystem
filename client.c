@@ -1,5 +1,8 @@
 #include "genutilsX.h"
 #include "customerX.h"
+#include "employeeX.h"
+#include "adminX.h"
+#include "managerX.h"
 
 
 struct User curUser = {.isActive = 1, .isLoggedIn = 0};
@@ -69,9 +72,9 @@ int main() {
     if (curUser.isLoggedIn == 1){
         switch(curUser.role){
             case RC : CustomerMenu_client(sock_fd, &curUser); break;
-            case RA : AdminMenu(); break;
-            case RM : ManagerMenu(); break;
-            case RE : EmployeeMenu(); break;
+            case RA : AdminMenu_client(sock_fd, &curUser); break;
+            case RM : ManagerMenu_client(sock_fd, &curUser); break;
+            case RE : EmployeeMenu_client(sock_fd, &curUser); break;
             default : break;
         }
     }
@@ -79,18 +82,3 @@ int main() {
     close(sock_fd);
     return 0;
 }
-
-/*
-
-          int choice = 1;
-          while (choice){
-            printf("---MENU---\n0. Logout\n");
-            printf("Your choice : ");
-            scanf("%d", &choice);
-            switch (choice){
-                case 0 : logout_client(sock_fd);
-                break;
-                default : break;
-            }
-          }
-*/
