@@ -455,3 +455,26 @@ void changeCustomerStatus(char username[MAXSTR], int stat){
     apply_lock(fd, F_UNLCK);
     close(fd);
 }
+
+void viewAllLoanApplications(int client_fd) {
+    int fd = open(LOANSFILE, O_RDONLY);
+    struct Loan loan;
+    ssize_t bytes_read;
+    apply_lock(fd, F_RDLCK);
+    while ((bytes_read = read(fd, &loan, sizeof(loan))) > 0) {
+        // Check for a partial read, which might mean a corrupt file
+        if (bytes_read != sizeof(loan)) {
+            safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
+            continue;
+        }
+        char temp[1024];
+        snprintf(temp, sizeof(temp), "LoanID: %d, Customer: %s, Manager: %s, Employee: %s, Loan Amount: %0.2f, Loan Status: %d", 
+        loan.loanID, loan.username, loan.manager, loan.employee, loan.loanAmount, loan.status);
+        send(client_fd, temp, sizeof(temp), 0);
+    }
+    char temp[1024] = "END";
+    send(client_fd, temp, sizeof(temp), 0);
+    apply_lock(fd, F_UNLCK);
+    close(fd);
+
+}

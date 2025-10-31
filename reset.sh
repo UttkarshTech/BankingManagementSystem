@@ -1,5 +1,4 @@
 #!/bin/bash
-rm -f loanID.dat
 touch loanID.dat
 gcc dummyWL.c genutilsX.c -o a.out
 ./a.out

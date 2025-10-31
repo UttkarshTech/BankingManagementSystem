@@ -114,4 +114,6 @@ int addLoan(char username[MAXSTR], char manager[MAXSTR], float loanAmount);
 
 void changeCustomerStatus(char username[MAXSTR], int stat);
 
+void viewAllLoanApplications(int client_fd);
+
 #endif
