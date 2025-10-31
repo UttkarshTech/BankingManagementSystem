@@ -5,7 +5,7 @@ int main() {
     // 1. Initialize an array of structs with your data
     struct User records_to_write[] = {
         {"abhi", "jeet", "Abhijeet", "Rai", "jua001", 1, 0, RC, 100000},
-        {"abhii", "guptil", "Abhijeet", "Gupta", "gup001", 1, 0, RC, 100000},
+        {"abhii", "guptil", "Abhijeet", "Gupta", "gup001", 0, 0, RC, 100000},
         {"uttu", "9159", "Uttkarsh", "Ranjan", "ut001", 1, 0, RA, 100000},
         {"nik", "garg", "Nikhil", "Garg", "garg001", 1, 0, RM, 100000},
         {"abha", "tiw", "Abhash", "Tiwari", "tiwa001", 1, 0, RE, 100000}
