@@ -30,6 +30,14 @@ void CustomerMenu_server(int client_fd, struct User *curUserPtr){
                 send(client_fd, curUserPtr, sizeof(struct User), 0);
             }
             break;
+            case 3 : {
+                float amt;
+                read(client_fd, &amt, sizeof(amt));
+
+                *curUserPtr = withdraw_server(client_fd, curUserPtr, amt);
+                send(client_fd, curUserPtr, sizeof(struct User), 0);
+            }
+            break;
             default : break;
         }
     }
@@ -75,6 +83,22 @@ void CustomerMenu_client(int sock_fd, struct User *curUserPtr){
                 if (curUserPtr->isActive == 1)
                     printf("Deposit Succesful\nAccount Details\nAccount Number: %s\nAccount Balance: %0.2f\n",
                     curUserPtr->accountNum, curUserPtr->balance);
+            }
+            break;
+            case 3 : {
+                float amt, prevBal = curUserPtr->balance;
+                printf("Enter amount to withdraw : ");
+                scanf("%f", &amt);
+                send(sock_fd, &amt, sizeof(amt), 0);
+                send(sock_fd, curUserPtr, sizeof(struct User), 0);
+                read(sock_fd, curUserPtr, sizeof(struct User));
+                if (curUserPtr->isActive == 1){
+                    if (prevBal != curUserPtr->balance)
+                        printf("Withdraw Succesful\nAccount Details\nAccount Number: %s\nAccount Balance: %0.2f\n",
+                        curUserPtr->accountNum, curUserPtr->balance);
+                    else
+                        printf("Withdraw Unsuccessful, not enough funds in account to withdraw requested amount.\n");
+                }
             }
             break;
             default : break;

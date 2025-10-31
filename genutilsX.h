@@ -69,4 +69,6 @@ struct User getDetails_server(int client_fd, struct User *curUserPtr);
 
 struct User deposit_server(int client_fd, struct User *curUserPtr, float amt);
 
+struct User withdraw_server(int client_fd, struct User *curUserPtr, float amt);
+
 #endif
