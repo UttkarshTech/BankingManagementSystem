@@ -8,7 +8,8 @@ int main() {
         {"abhii", "guptil", "Abhijeet", "Gupta", "gup001", 1, 0, RC, 100000},
         {"uttu", "9159", "Uttkarsh", "Ranjan", "ut001", 1, 0, RA, 100000},
         {"nik", "garg", "Nikhil", "Garg", "garg001", 1, 0, RM, 100000},
-        {"abha", "tiw", "Abhash", "Tiwari", "tiwa001", 1, 0, RE, 100000}
+        {"abha", "tiw", "Abhash", "Tiwari", "tiwa001", 1, 0, RE, 100000},
+        {"poo", "jan", "Poojan", "Pandya", "poo001", 1, 0, RE, 100000}
     };
     
     // Calculate how many records are in the array

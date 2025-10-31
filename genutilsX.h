@@ -128,4 +128,6 @@ int addNewCustomer(struct User *newCustomerPtr);
 
 int modifyCustomer(char username[MAXSTR], char firstName[MAXSTR], char lastName[MAXSTR]);
 
+void viewAllAssignedLoanApplications(char username[MAXSTR], int client_fd);
+
 #endif

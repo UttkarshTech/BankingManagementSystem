@@ -135,6 +135,11 @@ void EmployeeMenu_server(int client_fd, struct User *curUserPtr){
 
             }
             break;
+            case 11: {
+                read(client_fd, curUserPtr, sizeof(struct User));
+                viewAllAssignedLoanApplications(curUserPtr->username, client_fd);
+            }
+            break;
             default : break;
         }
     }
@@ -144,7 +149,7 @@ void EmployeeMenu_client(int sock_fd, struct User *curUserPtr){
     int choice = 1;
     while (choice){
         if (curUserPtr->isActive){
-            printf("\n\n---EMPLOYEE MENU---\n1. View Account Balance\n2. Deposit Money\n3. Withdraw Money\n4. Transfer Funds\n5. View All Transactions\n6. Apply for a Loan\n7. Leave a feedback\n8. Change Password\n9. Add new customer\n10. Modify customer details\n0. Logout\n\n");
+            printf("\n\n---EMPLOYEE MENU---\n1. View Account Balance\n2. Deposit Money\n3. Withdraw Money\n4. Transfer Funds\n5. View All Transactions\n6. Apply for a Loan\n7. Leave a feedback\n8. Change Password\n9. Add new customer\n10. Modify customer details\n11. View assigned loans\n0. Logout\n\n");
             printf("Your choice : ");
             scanf("%d", &choice);
         } else {
@@ -367,6 +372,22 @@ void EmployeeMenu_client(int sock_fd, struct User *curUserPtr){
                 }
                 printf("Customer modified succesfully!\n");
                 break;
+            }
+            break;
+            case 11 : {
+                send(sock_fd, curUserPtr, sizeof(curUserPtr), 0);
+                char temp[1024];
+                read(sock_fd, temp, sizeof(temp));
+                if (strcmp(temp, "END") == 0){
+                    printf("No loan applications.\n");
+                    break;
+                }
+                printf("\n---Loan Applications---\n");
+                while (strcmp(temp, "END") != 0){
+                    printf("%s\n", temp);
+                    read(sock_fd, temp, sizeof(temp));
+                }
+
             }
             break;
             default : break;
