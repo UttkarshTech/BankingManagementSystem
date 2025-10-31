@@ -71,4 +71,10 @@ struct User deposit_server(int client_fd, struct User *curUserPtr, float amt);
 
 struct User withdraw_server(int client_fd, struct User *curUserPtr, float amt);
 
+int validateUsername(char *username);
+
+int validateWithdrawal(char *username, float amount);
+
+struct User makeTxn(struct User *curUserPtr, float amount, char rcvr[MAXSTR]);
+
 #endif

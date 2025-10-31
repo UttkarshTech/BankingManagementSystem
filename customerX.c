@@ -38,6 +38,28 @@ void CustomerMenu_server(int client_fd, struct User *curUserPtr){
                 send(client_fd, curUserPtr, sizeof(struct User), 0);
             }
             break;
+            case 4 : {
+
+                read(client_fd, curUserPtr, sizeof(struct User));
+
+                float amount;
+                read(client_fd, &amount, sizeof(amount));
+                int flag = validateWithdrawal(curUserPtr->username, amount);
+                send(client_fd, &flag, sizeof(flag), 0);
+
+                if (flag == 1){
+                    char rcvr[MAXSTR];
+                    read(client_fd, rcvr, sizeof(rcvr));
+                    flag = validateUsername(rcvr);
+                    send(client_fd, &flag, sizeof(flag), 0);
+                    if (flag == 1){
+                        //make transaction
+                        *curUserPtr = makeTxn(curUserPtr, amount, rcvr);
+                        send(client_fd, curUserPtr, sizeof(struct User), 0);
+                    } else printf("Txn cancelled.\n");
+                } else printf("Txn cancelled.\n");
+            }
+            break;
             default : break;
         }
     }
@@ -47,7 +69,7 @@ void CustomerMenu_client(int sock_fd, struct User *curUserPtr){
     int choice = 1;
     while (choice){
         if (curUserPtr->isActive){
-            printf("\n\n---CUSTOMER MENU---\n1. View Account Balance\n2. Deposit Money\n3. Withdraw Money\n0. Logout\n");
+            printf("\n\n---CUSTOMER MENU---\n1. View Account Balance\n2. Deposit Money\n3. Withdraw Money\n4. Transfer Funds\n5. View All Transactions\n6. Apply for a Loan\n7. Leave a feedback\n8. Change Password\n0. Logout\n\n");
             printf("Your choice : ");
             scanf("%d", &choice);
         } else {
@@ -98,6 +120,51 @@ void CustomerMenu_client(int sock_fd, struct User *curUserPtr){
                         curUserPtr->accountNum, curUserPtr->balance);
                     else
                         printf("Withdraw Unsuccessful, not enough funds in account to withdraw requested amount.\n");
+                }
+            }
+            break;
+            case 4 : {
+                send(sock_fd, curUserPtr, sizeof(struct User), 0);
+                float amt, prevBal = curUserPtr->balance;
+                int flag;
+
+                //check if withdrawal of amount is possible
+                printf("Enter amount to transfer : ");
+                scanf("%f", &amt);
+                send(sock_fd, &amt, sizeof(amt), 0);
+                read(sock_fd, &flag, sizeof(flag));
+
+                if (flag == 1){
+                    //check is receiver is valid
+                    char rcvr[MAXSTR];
+                    printf("Enter the username of the receiver : ");
+                    scanf("%s", rcvr);
+
+                    send(sock_fd, rcvr, sizeof(rcvr), 0);
+                    read(sock_fd, &flag, sizeof(flag));
+
+                    if (flag == 1){
+                        read(sock_fd, curUserPtr, sizeof(struct User));
+                        if (curUserPtr->isActive == 1){
+                            if (prevBal != curUserPtr->balance)
+                                printf("Transaction Succesful\nAccount Details\nAccount Number: %s\nAccount Balance: %0.2f\n",
+                                curUserPtr->accountNum, curUserPtr->balance);
+                            else
+                                printf("Transaction Unsuccessful, not enough funds in account to withdraw requested amount.\n%0.2f, %0.2f\n", prevBal, curUserPtr->balance);
+                        }
+                    } else switch(flag){
+                        case 0 : printf("Transaction Unsuccessful, receiver not found.\n");
+                        break;
+                        case -1 : printf("Transaction Unsuccessful, receiver account disabled.\n");
+                        break;
+                        default : printf("Transaction Unsuccessful.\n");
+                    }
+                } else switch (flag) {
+                    case -1 : curUserPtr->isActive = 0;
+                    break;
+                    case -2 : printf("Transaction Unsuccessful, not enough funds in sender's account to withdraw requested amount.\n");
+                    break;
+                    default : printf("Transaction Unsuccessful");
                 }
             }
             break;
