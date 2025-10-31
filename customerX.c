@@ -60,6 +60,11 @@ void CustomerMenu_server(int client_fd, struct User *curUserPtr){
                 } else printf("Txn cancelled.\n");
             }
             break;
+            case 5 : {
+                read(client_fd, curUserPtr, sizeof(struct User));
+                getTxnDetails(client_fd, curUserPtr);
+            }
+            break;
             default : break;
         }
     }
@@ -165,6 +170,21 @@ void CustomerMenu_client(int sock_fd, struct User *curUserPtr){
                     case -2 : printf("Transaction Unsuccessful, not enough funds in sender's account to withdraw requested amount.\n");
                     break;
                     default : printf("Transaction Unsuccessful");
+                }
+            }
+            break;
+            case 5 : {
+                send(sock_fd, curUserPtr, sizeof(struct User), 0);
+                char temp[1024];
+                read(sock_fd, temp, sizeof(temp));
+                if (strcmp(temp, "END") == 0){
+                    printf("No transaction history.\n");
+                    break;
+                }
+                printf("\n---Transaction History---\n");
+                while (strcmp(temp, "END") != 0){
+                    printf("%s\n", temp);
+                    read(sock_fd, temp, sizeof(temp));
                 }
             }
             break;

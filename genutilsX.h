@@ -51,6 +51,7 @@ struct Txn {
     char receiver[MAXSTR];
     float amt;
     float senderBalAfterTxn;
+    float receiverBalAfterTxn;
 };
 
 
@@ -76,5 +77,7 @@ int validateUsername(char *username);
 int validateWithdrawal(char *username, float amount);
 
 struct User makeTxn(struct User *curUserPtr, float amount, char rcvr[MAXSTR]);
+
+void getTxnDetails(int client_fd, struct User *curUserPtr);
 
 #endif

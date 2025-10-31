@@ -156,6 +156,7 @@ struct User deposit_server(int client_fd, struct User *curUserPtr, float amt){
                 record.balance += amt;
                 apply_lock(fd1, F_WRLCK);
                 txnRecord.senderBalAfterTxn = record.balance;
+                txnRecord.receiverBalAfterTxn = record.balance;
                 write(fd1, &txnRecord, sizeof(struct Txn));
                 apply_lock(fd1, F_UNLCK);
 
@@ -197,6 +198,7 @@ struct User withdraw_server(int client_fd, struct User *curUserPtr, float amt){
                 record.balance -= amt;
                 apply_lock(fd1, F_WRLCK);
                 txnRecord.senderBalAfterTxn = record.balance;
+                txnRecord.receiverBalAfterTxn = record.balance;
                 write(fd1, &txnRecord, sizeof(struct Txn));
                 apply_lock(fd1, F_UNLCK);
 
@@ -292,6 +294,7 @@ struct User makeTxn(struct User *curUserPtr, float amount, char rcvr[MAXSTR]){
                 }
                 if (strcmp(rcvr, receiver.username) == 0){
                     receiver.balance += amount;
+                    txnRecord.receiverBalAfterTxn = receiver.balance;
                     lseek(fd1, -1*sizeof(receiver), SEEK_CUR);
                     write(fd1, &receiver, sizeof(receiver));
                     write(fd2, &txnRecord, sizeof(txnRecord));
@@ -308,4 +311,35 @@ struct User makeTxn(struct User *curUserPtr, float amount, char rcvr[MAXSTR]){
     close(fd2);
     close(fd1);
     return *curUserPtr;
+}
+
+void getTxnDetails(int client_fd, struct User *curUserPtr){
+    int fd = open(TXNSFILE, O_RDONLY);
+    struct Txn txnRecord;
+    ssize_t bytes_read;
+    int i = 0;
+    apply_lock(fd, F_RDLCK);
+    while ((bytes_read = read(fd, &txnRecord, sizeof(txnRecord))) > 0) {
+        // Check for a partial read, which might mean a corrupt file
+        if (bytes_read != sizeof(txnRecord)) {
+            safe_write(STDERR_FILENO, "Warning: Corrupt data file encountered.\n");
+            continue;
+        }
+        if (strcmp(curUserPtr->username, txnRecord.sender) == 0) {
+            char temp[1024];
+            snprintf(temp, sizeof(temp), "Sender: %s, Receiver: %s, Amount: %0.2f, Your Balance After Txn: %0.2f", 
+            txnRecord.sender, txnRecord.receiver, txnRecord.amt, txnRecord.senderBalAfterTxn);
+            send(client_fd, temp, sizeof(temp), 0);
+        }
+        else if (strcmp(curUserPtr->username, txnRecord.receiver) == 0) {
+            char temp[1024];
+            snprintf(temp, sizeof(temp), "Sender: %s, Receiver: %s, Amount: %0.2f, Your Balance After Txn: %0.2f", 
+            txnRecord.sender, txnRecord.receiver, txnRecord.amt, txnRecord.receiverBalAfterTxn);
+            send(client_fd, temp, sizeof(temp), 0);
+        }
+    }
+    char temp[1024] = "END";
+    send(client_fd, temp, sizeof(temp), 0);
+    apply_lock(fd, F_UNLCK);
+    close(fd);
 }
